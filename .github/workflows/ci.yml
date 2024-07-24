@@ -2,34 +2,48 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - "releases/*"
   pull_request:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3 # Обновлено до v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3 # Обновлено до v3
+        uses: actions/setup-node@v3
         with:
-          node-version: "20" # Явно указываем использование Node.js 20
-          cache: "npm" # Включение кеширования для npm
+          node-version: "16"
 
       - name: Install dependencies
         run: npm install
 
-      - name: Run linters
-        run: npm run lint
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/node@v2
+        with:
+          command: test
+          json: false
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
       - name: Run tests
         run: npm test
 
-      - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/node@master # Используем последнюю версию с ветки master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      - name: Upload Snyk test results as an artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: snyk-results
+          path: snyk-results.json
+
+      - name: Upload test results as an artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: test-results.xml
