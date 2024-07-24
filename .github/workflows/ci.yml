@@ -12,13 +12,13 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v3 # Обновлено до v3
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v3 # Обновлено до v3
         with:
-          node-version: "20"
-          cache: "npm"
+          node-version: "20" # Явно указываем использование Node.js 20
+          cache: "npm" # Включение кеширования для npm
 
       - name: Install dependencies
         run: npm install
@@ -30,8 +30,6 @@ jobs:
         run: npm test
 
       - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/node@v2
-        with:
-          command: test
+        uses: snyk/actions/node@master # Используем последнюю версию с ветки master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
